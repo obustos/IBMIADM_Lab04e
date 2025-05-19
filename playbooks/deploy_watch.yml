@@ -5,41 +5,61 @@
 
     - name: Crear carpeta temporal si no existe
       ansible.builtin.file:
-        path: /tmp/ibmi-watch
+        path: /home/IBMIADM00
         state: directory
 
     - name: Descomprimir el SAVF ZIP
       ansible.builtin.unarchive:
-        src: ../savf/wchpgmlab.savf.zip
-        dest: /tmp/ibmi-watch
+        src: ../savf/watch.zip
+        dest: /home/IBMIADM00
         remote_src: false
 
-    - name: Copiar SAVF al sistema IBM i
-      shell: |
-        system "CPYFRMSTMF FROMSTMF('/tmp/ibmi-watch/wchpgmlab.savf') TOMBR('/qsys.lib/misavfs.lib/wchpgmlab.file')"
+    - name: Elevar privilegios temporalmente usando SP
+      ibmi_sql_query:
+        sql: "CALL QSYS.ELEVATE()"
 
-    - name: Restaurar objeto desde SAVF
-      shell: |
-        system "RSTOBJ OBJ(WCHPGMLAB) SAVLIB(OBUSTOS) DEV(*SAVF) SAVF(MISAVFS/WCHPGMLAB)"
+    - name: Copiar SAVF desde IFS a QSYS usando CL
+      ibmi_cl_command:
+        cmd: "CPYFRMSTMF FROMSTMF('/home/IBMIADM00/watch.savf') TOMBR('/QSYS.LIB/IBMIADM00.LIB/WATCH.FILE')"
+
+    - name: Restaurar objeto desde SAVF con módulo
+      ibmi_object_restore:
+        object_name: WCHPGMLAB
+        object_type: '*PGM'
+        object_lib: QTEMP
+        parameters: 
+          RSTLIB(IBMIADM00)
+        savf_library: IBMIADM00
+        savf: WATCH
+        replace: true
 
     - name: Verificar watches activos existentes
-      shell: |
-        db2 "SELECT * FROM QSYS2.WATCH_INFO WHERE WATCH_SESSION_TYPE = '*STRWCH'"
+      ibmi_sql_query:
+        sql: "SELECT * FROM QSYS2.WATCH_INFO WHERE WATCH_SESSION_TYPE = '*STRWCH'"
       register: watch_output
 
     - name: Mostrar resultado de WATCH_INFO
       debug:
-        msg: "{{ watch_output.stdout_lines }}"
+        msg: "{{ watch_output.query_result }}"
 
-    - name: Validar privilegios de funciones de servicio WATCH
-      shell: |
-        DSPFNCUSG FNCID(QIBM_SERVICE_WATCH) USRPRF({{ ansible_user }})
-        DSPFNCUSG FNCID(QIBM_WATCH_ANY_JOB) USRPRF({{ ansible_user }})
+    - name: Verificar uso de función QIBM_SERVICE_WATCH
+      ibmi_sql_query:
+        sql: "SELECT * FROM QSYS2.FUNCTION_USAGE WHERE FUNCTION_ID = 'QIBM_SERVICE_WATCH' AND USER_NAME = SESSION_USER"
 
-    - name: Validar autorización al comando STRWCH
-      shell: |
-        DSPOBJAUT OBJ(QSYS/STRWCH) OBJTYPE(*CMD)
+    - name: Verificar uso de función QIBM_WATCH_ANY_JOB
+      ibmi_sql_query:
+        sql: "SELECT * FROM QSYS2.FUNCTION_USAGE WHERE FUNCTION_ID = 'QIBM_WATCH_ANY_JOB' AND USER_NAME = SESSION_USER"
 
-    - name: Validar autorización al comando ENDWCH
-      shell: |
-        DSPOBJAUT OBJ(QSYS/ENDWCH) OBJTYPE(*CMD)
+    - name: Verificar autoridad al comando STRWCH
+      ibmi_object_authority:
+        object_name: STRWCH
+        object_type: '*CMD'
+        library: QSYS
+      register: auth_strwch
+
+    - name: Verificar autoridad al comando ENDWCH
+      ibmi_object_authority:
+        object_name: ENDWCH
+        object_type: '*CMD'
+        library: QSYS
+      register: auth_endwch

@@ -1,6 +1,6 @@
-# LABORATORIO: IBM i Watch + RCAC + Ansible
+# IBM i Lab04e - Eventos IBMi
 
-Este laboratorio te guía en la ejecución de un entorno automatizado para detectar eventos del sistema IBM i, capturarlos con un programa watch (`STRWCH`) y almacenarlos en una tabla protegida con RCAC.
+Este laboratorio le guía en la ejecución de un entorno automatizado para detectar eventos del sistema IBM i, capturarlos con un watch (`STRWCH`) y almacenarlos en una tabla logs y comunicar el evento a otras areas de la organización.
 
 ---
 
@@ -20,7 +20,7 @@ cd ibmi-watch-lab
 Este playbook realiza:
 
 - Restauración del objeto `WCHPGMLAB` desde un archivo `.savf`
-- Verificación de privilegios requeridos
+- Verificación de privilegios requeridos para el entorno de watches
 - Validación de acceso a comandos relacionados a `watch`
 
 ### 🔹 Pasos previos al playbook
