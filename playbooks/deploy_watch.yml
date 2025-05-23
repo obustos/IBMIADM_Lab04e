@@ -1,4 +1,4 @@
-name: Desplegar entorno del laboratorio Watch
+- name: Desplegar entorno del laboratorio Watch
   hosts: localhost
   gather_facts: no
   tasks:
@@ -16,12 +16,12 @@ name: Desplegar entorno del laboratorio Watch
     - name: Descomprimir el SAVF ZIP
       ansible.builtin.unarchive:
         src: ~/ansible/IBMIADM_Lab04e/savf/watch.zip
-        dest: "/"
+        dest: /home/IBMIADM00 
       register: unzip
     
-#    - name: Debug
-#      debug:
-#        msg: "{{ unzip }}"
+    - name: Debug
+      debug:
+        msg: "{{ unzip }}"
 
     - name: Elevar privilegios temporalmente usando db2util
       shell: |
@@ -46,60 +46,32 @@ name: Desplegar entorno del laboratorio Watch
       ibm.power_ibmi.ibmi_sql_query:
         sql: "SELECT * FROM QSYS2.WATCH_INFO WHERE WATCH_SESSION_TYPE = '*STRWCH'"
       register: watch_output
-
-    - name: Verificar autoridad al comando STRWCH - ARRANCAR OBSERVACIÓN
-      ibm.power_ibmi.ibmi_object_authority:
-        operation: display
-        object_name: STRWCH
-        object_library: QSYS
-        object_type: '*CMD'
-      register: auth_strwch
-
-    - name: Verificar autoridad al comando ENDWCH - FINALIZAR OBSERVACIÓN
-      ibm.power_ibmi.ibmi_object_authority:
-        operation: display
-        object_name: ENDWCH
-        object_type: '*CMD'
-        object_library: QSYS
-      register: auth_endwch
-
-    - name: Verificar autoridad al programa QSCRWCHL - RETRIEVE WATCHES LIST
-      ibm.power_ibmi.ibmi_object_authority:
-        operation: display
-        object_name: QSCRWCHL
-        object_type: '*PGM'
-        object_library: QSYS
-      register: auth_QSCRWCHL
-
-    - name: Verificar autoridad al programa QSCRWCHI - RETRIEVE INFORMATION ON WATCH SESSION ACTIVE
-      ibm.power_ibmi.ibmi_object_authority:
-        operation: display
-        object_name: QSCRWCHI
-        object_type: '*PGM'
-        object_library: QSYS
-      register: auth_QSCRWCHI
     
-    - name: Valida permisos
+    - name: Verificar autoridad a los comandos STRWCH y ENDWCH
       ibm.power_ibmi.ibmi_sql_query:
         sql: >-
           Select object_schema, object_name, object_type, authorization_name, object_authority, 
           object_operational, object_alter, data_read, data_execute, text_description
           From qsys2.object_privileges
-          Where name = 'STRWCH' And object_schema = 'QSYS' And object_type = '*CMD' And
+          Where name in ('STRWCH', 'ENDWCH') And object_schema = 'QSYS' And object_type = '*CMD' And
           authorization_name Like '%IBMIADM%'
       register: sql_strwch
 
-    - name: Debug
-      debug:
-        msg: 
-          "{{ sql_strwch.row[0] }}"
+      # Verificar autoridad al programa QSCRWCHI - RETRIEVE INFORMATION ON WATCH SESSION ACTIVE
+      # Verificar autoridad al programa QSCRWCHL - RETRIEVE WATCHES LIST
+    
+    - name: Verificar autoridad a los objetos QSCRWCHL y QSCRWCHI
+      ibm.power_ibmi.ibmi_sql_query:
+        sql: >-
+          Select object_schema, object_name, object_type, authorization_name, object_authority, 
+          object_operational, object_alter, data_read, data_execute, text_description
+          From qsys2.object_privileges
+          Where name in ('QSCRWCHL','QSCRWCHI') And object_schema = 'QSYS' And object_type = '*PGM' And
+          authorization_name Like '%IBMIADM%'
+      register: sql_pgms
 
     - name: Debug
       debug:
         msg: 
-        - "OBJECT_NAME : {{ auth_strwch.object_authority_list[0].OBJECT_NAME }}"
-        - "OBJECT_AUTHORITY : {{ auth_strwch.object_authority_list[0].OBJECT_AUTHORITY }}"
-        - "OBJECT_NAME : {{ auth_endwch.object_authority_list[0].OBJECT_NAME }}"
-        - "OBJECT_AUTHORITY : {{ auth_endwch.object_authority_list[0].OBJECT_AUTHORITY }}"
-        - "OBJECT_NAME : {{ auth_QSCRWCHL.object_authority_list[0].OBJECT_NAME }}"
-        - "OBJECT_AUTHORITY : {{ auth_QSCRWCHL.object_authority_list[0].OBJECT_AUTHORITY }}"
+          - "{{ sql_strwch.row }}"
+          - "{{ sql_pgms.row }}"
