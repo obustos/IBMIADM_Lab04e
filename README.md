@@ -1,60 +1,49 @@
-# IBM i Lab04e - Eventos IBMi
+# 🧪 Laboratorio 04E – Automatización de eventos y monitoreo en IBM i con Ansible
 
-Este laboratorio le guía en la ejecución de un entorno automatizado para detectar eventos del sistema IBM i, capturarlos con un watch (`STRWCH`) y almacenarlos en una tabla logs y comunicar el evento a otras areas de la organización.
+Este laboratorio tiene como objetivo mostrar a los estudiantes cómo aprovechar la automatización y el monitoreo de eventos en **IBM i 7.5**, utilizando herramientas como:
 
----
-
-## 📦 Repositorio Git
-
-Inicia una sesion de Terminal en IBM i y ubiquese en su **homedir**
-Clone este repositorio para acceder al material del laboratorio:
-
-
-```bash
-git clone https://github.com/obustos/IBMIADM_Lab04e.git
-cd IBMIADM_Lab04e
-```
+- ✅ Ansible (automatización basada en YAML)
+- ✅ Programas `watch` (`STRWCH` / `ENDWCH`)
+- ✅ Captura de eventos vía mensajes del sistema (`CPF*`)
+- ✅ Inserción de eventos en una tabla con control de acceso (RCAC)
+- ✅ Generación de reportes automatizados
 
 ---
 
-## 🔧 Despliegue inicial (Playbook 1)
+## 🎯 ¿Por qué es importante este laboratorio?
 
-Este playbook se encarga de :
+Porque te permitirá experimentar con un flujo completo de observabilidad sobre IBM i que incluye:
 
-- Verificar privilegios y elevarlos para poder restarura
-- Restaura el objeto `WCHPGMLAB` desde un archivo `.savf`
-- Valida de acceso a comandos y objetos relacionados a `watch`
+- Activación de monitoreo de eventos
+- Registro automático de actividad según condiciones preestablecidas
+- Desacoplamiento entre quien genera el evento y quien lo observa
+- Uso de Ansible como plataforma de despliegue repetible y estructurada
+- Control de visibilidad mediante RCAC
 
-### 🔹 Pasos previos al playbook
-
-> Esta parte la realiza cada estudiante. No es necesario compilar fuentes.
-
-1. Validar que ha realizado exitosamente el lab anterior donde instala ansible en IBM i en un entorno "local" para su perfil de usuario.
-2. Ejecuta el playbook 1:
-
-```bash
-ansible-playbook playbooks/deploy_watch.yml
-```
+Además, es una excelente oportunidad para conocer cómo los sistemas centrales pueden beneficiarse de enfoques modernos sin dejar atrás su robustez.
 
 ---
 
-## ⚙️ Ejecución del laboratorio (Playbook 2)
+## 🚀 ¿Qué vas a hacer?
 
-Este playbook activa un watch y genera eventos que deberian ser detectados en un log.
-Las actividades sobre archivos 'small' no deben generar evento, los 'big' si derian generalo
-- Inicia el watch con `STRWCH`
-- Genera eventos (`small` y `big`)
-- Finaliza el watch
-- Consulta la tabla `event_log` filtrada por usuario
+Durante este laboratorio:
 
-```bash
-ansible-playbook playbooks/run_watch.yml
-```
-
-También puedes consultar manualmente:
-
-```sql
-SELECT * FROM LABADM.EVENT_LOG ORDER BY TIMESTAMP DESC;
-```
+1. Restaurarás un programa de tipo `watch` desde un `.savf` automatizado
+2. Lanzarás el monitoreo de eventos con un `playbook`
+3. Generarás eventos de prueba
+4. Detendrás el `watch` y consultarás los eventos capturados
+5. Revisarás los mensajes del sistema asociados
+6. Opcionalmente limpiarás los artefactos de la prueba
 
 ---
+
+## 📘 ¿Cómo empiezo?
+
+Revisa el archivo [`lab04e_instruciones.md`](./lab04e_instruciones.md) para seguir los pasos recomendados.
+
+> Este laboratorio está diseñado para ser ejecutado **con mínima intervención manual**, aprovechando al máximo las capacidades de automatización que ofrece Ansible en IBM i.
+
+---
+
+¡Éxitos y que disfrutes automatizando el poder de IBM i! 💡
+
