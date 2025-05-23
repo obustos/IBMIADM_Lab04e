@@ -9,8 +9,8 @@ Este laboratorio le guía en la ejecución de un entorno automatizado para detec
 Clona este repositorio para acceder al material del laboratorio:
 
 ```bash
-git clone https://github.com/tu-org/ibmi-watch-lab.git
-cd ibmi-watch-lab
+git clone https://github.com/obustos/IBMIADM_Lab04e.git
+cd IBMIADM_Lab04e
 ```
 
 ---
@@ -27,16 +27,8 @@ Este playbook realiza:
 
 > Esta parte la realiza cada estudiante. No es necesario compilar fuentes.
 
-1. Verifica que el archivo `wchpgmlab.savf.zip` esté disponible en `savf/`
-2. Descomprime el archivo:
-   ```bash
-   unzip savf/wchpgmlab.savf.zip -d /tmp
-   ```
-3. Copia el archivo `.savf` a IBM i:
-   ```bash
-   CPYFRMSTMF FROMSTMF('/tmp/wchpgmlab.savf') TOMBR('/qsys.lib/misavfs.lib/wchpgmlab.file')
-   ```
-4. Ejecuta el playbook:
+1. Verifica que el archivo `watch.zip` esté disponible en wl subdirectorio `savf/` ```
+2. Ejecuta el playbook:
 
 ```bash
 ansible-playbook playbooks/deploy_watch.yml
