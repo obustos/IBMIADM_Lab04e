@@ -1,4 +1,4 @@
-# 🧪 Laboratorio 04E – Automatización de eventos y monitoreo en IBM i con Ansible
+# 🧪 Laboratorio Lab04e – Automatización de eventos y monitoreo en IBM i con Ansible
 
 Este laboratorio tiene como objetivo mostrar a los estudiantes cómo aprovechar la automatización y el monitoreo de eventos en **IBM i 7.5**, utilizando herramientas como:
 
@@ -39,7 +39,7 @@ Durante este laboratorio:
 
 ## 📘 ¿Cómo empiezo?
 
-Revisa el archivo Lab04e_Instrucciones.md para seguir los pasos recomendados.
+Revisa el archivo **Lab04e_Instrucciones.md** para seguir los pasos recomendados.
 
 > Este laboratorio está diseñado para ser ejecutado **con mínima intervención manual**, aprovechando al máximo las capacidades de automatización que ofrece Ansible en IBM i.
 
