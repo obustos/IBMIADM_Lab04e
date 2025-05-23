@@ -1,6 +1,11 @@
 - name: Desplegar entorno del laboratorio Watch
   hosts: localhost
   gather_facts: no
+
+  # variable a sustituir por su User Id
+  vars:
+    usuario: IBMIADM00
+
   tasks:
 
     - name: Crear carpeta temporal si no existe
@@ -18,7 +23,7 @@
         object_names: WCHPGMLAB
         object_types: '*PGM'
         object_lib: QTEMP
-        parameters: "RSTLIB(IBMIADM00)"
+        parameters: "RSTLIB({{ usuario }})"
         savefile_lib: LABADM
         savefile_name: WATCH
 

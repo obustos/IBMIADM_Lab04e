@@ -1,0 +1,25 @@
+- name: Ejecutar laboratorio de eventos IBM i
+  hosts: localhost
+  gather_facts: no
+
+  # variable a sustituir por su User Id
+  vars:
+    usuario: IBMIADM00
+
+  tasks:
+
+    - name: Genera Evento 01 - Ansible - PlayBook
+      shell: |
+        /QOpenSys/pkgs/bin/db2util -o json "Call labadm.genera_evento('big', '{{ usuario }}', '01-desde Ansible PB-Pase')"
+      args:
+        executable: /QOpenSys/pkgs/bin/bash
+
+    - name: Genera Evento 02 - Ansible - PlayBook 
+      shell: |
+        /QOpenSys/pkgs/bin/db2util -o json "Call labadm.genera_evento('small', '{{ usuario }}', '02-desde Ansible PB-Pase')"
+      args:
+        executable: /QOpenSys/pkgs/bin/bash
+
+    - name: Genera Evento 03 - Ansible - PlayBook
+      shell: |
+        system "RUNSQLSTM SRCFILE({{ usuario }}/QSCRIPTS) SRCMBR(GEN_EVENT) COMMIT(*NONE) NAMING(*SQL)"

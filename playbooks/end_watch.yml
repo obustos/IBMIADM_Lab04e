@@ -1,0 +1,63 @@
+- name: Ejecutar laboratorio de eventos IBM i
+  hosts: localhost
+  gather_facts: no
+
+  # variable a sustituir por su User Id
+  vars:
+    usuario: IBMIADM00
+
+  tasks:
+
+    - name: Elevar privilegios temporalmente usando db2util
+      shell: /QOpenSys/pkgs/bin/db2util "CALL LABADM.ELEVATE2(2)"
+    
+    - name: Finalizar el watch para {{ usuario }}
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: "ENDWCH SSNID({{ usuario }})"
+      register: resultado_watch
+      ignore_errors: true
+
+    #- name: Mostrar todos los mensajes del job_log
+    #  debug:
+    #    var: resultado_watch.job_log
+
+    - name: Mostrar MESSAGE_TEXT con SEVERITY > 40
+      debug:
+        msg: >-
+          {{ resultado_watch.job_log
+            | selectattr('SEVERITY', '>', 0)
+            | map(attribute='MESSAGE_TEXT')
+            | list }}
+      when: resultado_watch.job_log is defined and
+        (resultado_watch.job_log | selectattr('SEVERITY', '>', 0) | list | length > 0)
+
+    - name: Consultar la tabla EVENT_LOG
+      ibm.power_ibmi.ibmi_sql_query:
+        sql: >-
+          Select message_watched,
+            msg_ts,
+            msg_repld, 
+            message_type,
+            message_file_name,
+            message_file_library
+            As sending_user_profile,
+            message_queue_name,
+            message_queue_library,
+            job_name,
+            job_user_name,
+            job_number,
+            trim(sending_program_name) as sending_program_name
+          From labadm.watch_events
+          where regexp_like(msg_repld, '{{ usuario }}', 'i')
+          order by msg_ts desc
+      register: eventos_resultado
+
+    - name: Mostrar eventos registrados
+      debug:
+        msg: "{{ eventos_resultado.row }}"
+
+    - name: Guardar reporte local en archivo plano
+      copy:
+        content: "{{ eventos_resultado.row }}"
+        dest: "~/reporte_event_log.txt"
+
