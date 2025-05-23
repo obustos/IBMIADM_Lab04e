@@ -8,38 +8,18 @@
         path: "~"
         state: directory
 
-    - name: Eliminar archivo previo si existe
-      ansible.builtin.file:
-        path: ~/watch.savf
-        state: absent
-
-    - name: Descomprimir el SAVF ZIP
-      ansible.builtin.unarchive:
-        src: ~/ansible/IBMIADM_Lab04e/savf/watch.zip
-        dest: /home/IBMIADM00 
-      register: unzip
-    
-    - name: Debug
-      debug:
-        msg: "{{ unzip }}"
-
     - name: Elevar privilegios temporalmente usando db2util
       shell: |
         /QOpenSys/pkgs/bin/db2util "CALL LABADM.ELEVATE2(2)"
 
-# Realizar las sustituciones correspondientes
-    - name: Copiar SAVF desde IFS a QSYS usando CL
-      ibm.power_ibmi.ibmi_cl_command:
-        cmd: "CPYFRMSTMF FROMSTMF('/home/IBMIADM00/watch.savf') TOMBR('/QSYS.LIB/IBMIADM00.LIB/WATCH.FILE') MBROPT(*REPLACE)"
-
-# Realizar las sustituciones correspondientes
+    # Realizar las sustituciones correspondientes
     - name: Restaurar objeto desde SAVF con módulo
       ibm.power_ibmi.ibmi_object_restore:
         object_names: WCHPGMLAB
         object_types: '*PGM'
         object_lib: QTEMP
         parameters: "RSTLIB(IBMIADM00)"
-        savefile_lib: IBMIADM00
+        savefile_lib: LABADM
         savefile_name: WATCH
 
     - name: Verificar watches activos existentes
@@ -57,9 +37,8 @@
           authorization_name Like '%IBMIADM%'
       register: sql_strwch
 
-      # Verificar autoridad al programa QSCRWCHI - RETRIEVE INFORMATION ON WATCH SESSION ACTIVE
-      # Verificar autoridad al programa QSCRWCHL - RETRIEVE WATCHES LIST
-    
+    # Verificar autoridad al programa 
+    # QSCRWCHL  y QSCRWCHI 
     - name: Verificar autoridad a los objetos QSCRWCHL y QSCRWCHI
       ibm.power_ibmi.ibmi_sql_query:
         sql: >-
@@ -70,8 +49,8 @@
           authorization_name Like '%IBMIADM%'
       register: sql_pgms
 
-    - name: Debug
-      debug:
-        msg: 
-          - "{{ sql_strwch.row }}"
-          - "{{ sql_pgms.row }}"
+#    - name: Debug
+#      debug:
+#        msg: 
+#          - "{{ sql_strwch.row }}"
+#          - "{{ sql_pgms.row }}"
