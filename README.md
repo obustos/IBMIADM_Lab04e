@@ -39,7 +39,7 @@ Durante este laboratorio:
 
 ## 📘 ¿Cómo empiezo?
 
-Revisa el archivo [`lab04e_instruciones.md`](./lab04e_instruciones.md) para seguir los pasos recomendados.
+Revisa el archivo Lab04e_Instrucciones.md para seguir los pasos recomendados.
 
 > Este laboratorio está diseñado para ser ejecutado **con mínima intervención manual**, aprovechando al máximo las capacidades de automatización que ofrece Ansible en IBM i.
 
