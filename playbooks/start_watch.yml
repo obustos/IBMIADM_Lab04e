@@ -1,0 +1,37 @@
+- name: Ejecutar laboratorio de eventos IBM i
+  hosts: localhost
+  gather_facts: no
+
+  # variable a sustituir por su User Id
+  vars:
+    usuario: IBMIADM00
+
+  tasks:
+
+    - name: Elevar privilegios temporalmente usando db2util
+      shell: /QOpenSys/pkgs/bin/db2util "CALL LABADM.ELEVATE2(2)"
+
+    - name: Iniciar el watch para {{ usuario }}
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: "STRWCH SSNID({{ usuario }}) WCHPGM({{ usuario }}/WCHPGMLAB) WCHMSG((CPI8859))"
+
+    - name: Verificar si Wath esta activo
+      ibm.power_ibmi.ibmi_sql_query:
+        sql: >-
+          Select w.session_id,
+          w.origin,
+          w.start_timestamp,
+          w.user_id,
+          w.status,
+          w.watch_session_type,
+          w.watched_message_count,
+          w.watch_program_library,
+          w.watch_program
+          From qsys2.watch_info w
+          Where w.watch_session_type = '*STRWCH' And
+                w.user_id = '{{ usuario }}';
+      register: sql_strwch
+
+    - name: Debug
+      debug:
+        msg: "{{ sql_strwch.row }}"

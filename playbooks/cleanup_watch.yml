@@ -1,0 +1,44 @@
+- name: Limpiar tablas temporales SMALL* y BIG*
+  hosts: localhost
+  gather_facts: no
+  collections:
+    - ibm.power_ibmi
+
+  # variable a sustituir por su User Id
+  vars:
+    usuario: IBMIADM00
+
+  tasks:
+
+    - name: Obtener nombres de tablas SMALL*
+      ibmi_sql_query:
+        sql: "SELECT TABLE_NAME FROM QSYS2.SYSTABLES WHERE TABLE_SCHEMA = '{{ usuario }}' AND TABLE_NAME LIKE 'SMALL%'"
+      register: small_tables
+    
+#    - name: Debug
+#      debug:
+#        msg: "{{ small_tables }}"
+
+    - name: Obtener nombres de tablas BIG*
+      ibmi_sql_query:
+        sql: "SELECT TABLE_NAME FROM QSYS2.SYSTABLES WHERE TABLE_SCHEMA = '{{ usuario }}' AND TABLE_NAME LIKE 'BIG%'"
+      register: big_tables
+
+#    - name: Debug
+#      debug:
+#        msg: "{{ big_tables.row }}"
+
+    - name: Unir listas de tablas a eliminar
+      set_fact:
+        tablas_a_borrar: "{{ small_tables['row'] | default([]) + big_tables['row'] | default([]) }}"
+
+    - name: Mostrar tabla que será eliminada
+      debug:
+        msg: "Eliminando tabla: {{ usuario }}.{{ item.TABLE_NAME }}"
+      loop: "{{ tablas_a_borrar }}"
+
+    - name: Eliminar tablas detectadas
+      ibmi_sql_execute:
+        sql: "DROP TABLE {{ usuario }}.{{ item.TABLE_NAME }}"
+      loop: "{{ tablas_a_borrar }}"
+      when: tablas_a_borrar | length > 0
