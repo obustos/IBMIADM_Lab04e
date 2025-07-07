@@ -6,7 +6,7 @@
 
   # variable a sustituir por su User Id
   vars:
-    usuario: IBMIADM00
+    usuario: IBMIADMxx
 
   tasks:
 

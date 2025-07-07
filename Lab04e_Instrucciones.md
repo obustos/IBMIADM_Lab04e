@@ -67,7 +67,7 @@ Las actividades sobre archivos 'small' no deben generar evento, los 'big' si der
 Cree un miembro fuente llamado GEN_EVENT en QSCRIPTS de su schema de trabajo
 e ingrese la siguiente instrucción, tambien lo puede copiar de LABADM.
 ```sql
-Call labadm.genera_evento('big', 'IBMIADM00', '03-desde Ansible PlayBook - CL'); 
+Call labadm.genera_evento('big', 'IBMIADMxx', '03-desde Ansible PlayBook - CL'); 
 ```
 Ejecute el playbook.
 
