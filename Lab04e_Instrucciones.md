@@ -34,7 +34,7 @@ ansible --version
 ```
 3. Revise los playbooks clonados con VScode y realice la sustitucion de variables para indicar su User Id
 ```bash
-cd IBMIADM_Lab04e
+cd IBMIADM_Lab04e/playbooks
 ls
 ```
 
@@ -54,7 +54,7 @@ ansible-playbook playbooks/deploy_watch.yml
 Este playbook activa un watch y consulta los monitores activos.
 
 ```bash
-ansible-playbook playbooks/run_watch.yml
+ansible-playbook playbooks/start_watch.yml
 ```
 
 ---
@@ -64,8 +64,7 @@ ansible-playbook playbooks/run_watch.yml
 Este playbook genera eventos que deberian ser detectados en un log.
 Las actividades sobre archivos 'small' no deben generar evento, los 'big' si derian generalo.
 
-Cree un miembro fuente llamado GEN_EVENT en QSCRIPTS de su schema de trabajo
-e ingrese la siguiente instrucción, tambien lo puede copiar de LABADM.
+Cree un miembro fuente llamado GEN_EVENT en QSCRIPTS de su schema de trabajo e ingrese la siguiente instrucción.
 ```sql
 Call labadm.genera_evento('big', 'IBMIADMxx', '03-desde Ansible PlayBook - CL'); 
 ```
@@ -75,21 +74,21 @@ Ejecute el playbook.
 ansible-playbook playbooks/gen_events.yml
 ```
 
-Genere un par de eventos adicionales desde cualquiera de las herramientas de automatizacion conocidas como:
+Genere un par de eventos adicionales desde cualquiera de las herramientas de automatizacion de su preferencia como:
 - db2util
 - XMLService
 - RSEAPI
 
-*Nota:* Deberia usar el tag xml para lanzar una sentencia < sql > y/o consumir el API SQL de RSEAPI (no olvide la autenticacion previa).
+*Nota:* Si utiliza xmlservice, deberá usar el tag xml para lanzar una sentencia < sql >. Para RSEAPI debe consumir el API SQL (no olvide la autenticacion previa).
 
-Oberva este playbook o el miembro fuente para copiar la sentencia SQL que genera los eventos. 
+Oberva el playbook gen_events.yml o el miembro fuente GEN_EVENT para copiar la sentencia SQL que genera los eventos. 
 
-Cambie el 3er parametro indicando el origen del evento ej.: 
+Cambie el tercer parametro indicando el origen del nuevo evento Ej.: 
 - 04-desde PASE-db2util 
 - 05-desde Xmlservice 
 - 06-desde RSEAPI
 
-Consulte la tabla de logs para validar que ha generado al menos 5 eventos
+Consulte la tabla de logs para validar que ha generado al menos 4 o 5 eventos.
 ```sql
 Select *
    From labadm.watch_events
@@ -117,12 +116,16 @@ En este momento puede generar nuevos eventos pero estos NO serán capturados por
 
 ### ⚙️ Playbook 5: Cierre 
 
-Consulte los archivos big* y small* generados en su schema de trabajo, para ello puede consultar el catálogo SYSTABLES de su schema de trabajo.
+Cada evento lanzado produce dos tareas:
+1. Generar un archivo con prefijo SMALL o BIG y una extension pseudoaleatoria (relacionado con el procesamiento de un paquete transaccional). El interes del watch es notificar de la ejecucion de esas transacciones pero solo de paquetes BIG.
+2. Enviar un mensaje en QSYSOPR que, de manera asincrona, será captiurado por el watch para enviar la notificacion o alerta, en este caso colectar un log para telemetria u observabilidad del proceso.
+
+Consulte los archivos big* y small* generados en sus eventos, para ello puede consultar el catálogo SYSTABLES de su schema de trabajo.
 ```sql
 Select * From catalogo where regexp_like(table_name, 'small|big', 'i');
 ```
 
-Ejecute el playbook de limpieza.
+Ejecute el playbook de limpieza para retirar el watch del sistema y que ya no reporte eventos.
 
 ```bash
 ansible-playbook playbooks/cleanup_watch.yml
